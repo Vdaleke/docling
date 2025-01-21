@@ -16,6 +16,7 @@ from docling.datamodel.pipeline_options import (
     RapidOcrOptions,
     TesseractCliOcrOptions,
     TesseractOcrOptions,
+    VisionOcrOptions,
 )
 from docling.models.base_model import BasePageModel
 from docling.models.base_ocr_model import BaseOcrModel
@@ -29,6 +30,7 @@ from docling.models.page_preprocessing_model import (
     PagePreprocessingOptions,
 )
 from docling.models.rapid_ocr_model import RapidOcrModel
+from docling.models.vision_ocr_model import VisionOcrModel
 from docling.models.table_structure_model import TableStructureModel
 from docling.models.tesseract_ocr_cli_model import TesseractOcrCliModel
 from docling.models.tesseract_ocr_model import TesseractOcrModel
@@ -141,6 +143,11 @@ class StandardPdfPipeline(PaginatedPipeline):
                     f"The specified OCR type is only supported on Mac: {self.pipeline_options.ocr_options.kind}."
                 )
             return OcrMacModel(
+                enabled=self.pipeline_options.do_ocr,
+                options=self.pipeline_options.ocr_options,
+            )
+        elif isinstance(self.pipeline_options.ocr_options, VisionOcrOptions):
+            return VisionOcrModel(
                 enabled=self.pipeline_options.do_ocr,
                 options=self.pipeline_options.ocr_options,
             )

@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 from typing import List
@@ -13,6 +14,7 @@ from docling.datamodel.pipeline_options import (
     RapidOcrOptions,
     TesseractCliOcrOptions,
     TesseractOcrOptions,
+    VisionOcrOptions,
 )
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
@@ -68,6 +70,16 @@ def test_e2e_conversions():
     if "darwin" == sys.platform:
         engines.append(OcrMacOptions())
         engines.append(OcrMacOptions(force_full_page_ocr=True))
+
+    iam_token = os.environ.get("IAM_TOKEN", "")
+    folder_id = os.environ.get("FOLDER_ID", "")
+    if iam_token != "" and folder_id != "":
+        engines.append(VisionOcrOptions(iam_token=iam_token, folder_id=folder_id))
+        engines.append(
+            VisionOcrOptions(
+                iam_token=iam_token, folder_id=folder_id, force_full_page_ocr=True
+            )
+        )
 
     for ocr_options in engines:
         print(f"Converting with ocr_engine: {ocr_options.kind}")
