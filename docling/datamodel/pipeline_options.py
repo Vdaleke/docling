@@ -4,7 +4,7 @@ import re
 import warnings
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Dict, List, Literal, Optional, Tuple, Type, Union
 
 from pydantic import (
     AnyUrl,
@@ -20,6 +20,7 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
+from pyrate_limiter import Duration, Limiter, RequestRate
 from typing_extensions import deprecated
 
 _log = logging.getLogger(__name__)
@@ -210,6 +211,21 @@ class OcrMacOptions(OcrOptions):
     )
 
 
+class VisionOcrOptions(OcrOptions):
+    """Options for the Yandex Visual OCR engine."""
+
+    kind: Literal["visionocr"] = "visionocr"
+    lang: List[str] = ["*"]  # automatically detect the languages with "*"
+    iam_token: str
+    folder_id: str
+    limiter: Limiter = Limiter(RequestRate(1, Duration.SECOND * 2))
+
+    model_config = ConfigDict(
+        extra="forbid",
+        arbitrary_types_allowed=True,
+    )
+
+
 class PictureDescriptionBaseOptions(BaseModel):
     kind: str
     batch_size: int = 8
@@ -312,6 +328,7 @@ class OcrEngine(str, Enum):
     TESSERACT = "tesseract"
     OCRMAC = "ocrmac"
     RAPIDOCR = "rapidocr"
+    VISIONOCR = "visionocr"
 
 
 class PipelineOptions(BaseModel):
@@ -364,6 +381,7 @@ class PdfPipelineOptions(PaginatedPipelineOptions):
         TesseractOcrOptions,
         OcrMacOptions,
         RapidOcrOptions,
+        VisionOcrOptions,
     ] = Field(EasyOcrOptions(), discriminator="kind")
     picture_description_options: Annotated[
         Union[PictureDescriptionApiOptions, PictureDescriptionVlmOptions],

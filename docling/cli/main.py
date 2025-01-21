@@ -38,6 +38,7 @@ from docling.datamodel.pipeline_options import (
     TableFormerMode,
     TesseractCliOcrOptions,
     TesseractOcrOptions,
+    VisionOcrOptions,
 )
 from docling.datamodel.settings import settings
 from docling.document_converter import DocumentConverter, FormatOption, PdfFormatOption
@@ -202,6 +203,20 @@ def convert(
         typer.Option(
             ...,
             help="Provide a comma-separated list of languages used by the OCR engine. Note that each OCR engine has different values for the language names.",
+        ),
+    ] = None,
+    iam_token: Annotated[
+        Optional[str],
+        typer.Option(
+            ...,
+            help="IAM token for use in Vision OCR. For more information visit https://yandex.cloud/ru/docs/vision/quickstart",
+        ),
+    ] = None,
+    folder_id: Annotated[
+        Optional[str],
+        typer.Option(
+            ...,
+            help="Folder id for use in Vision OCR. For more information visit https://yandex.cloud/ru/docs/vision/quickstart",
         ),
     ] = None,
     pdf_backend: Annotated[
@@ -377,6 +392,12 @@ def convert(
             ocr_options = OcrMacOptions(force_full_page_ocr=force_ocr)
         elif ocr_engine == OcrEngine.RAPIDOCR:
             ocr_options = RapidOcrOptions(force_full_page_ocr=force_ocr)
+        elif ocr_engine == OcrEngine.VISIONOCR:
+            ocr_options = VisionOcrOptions(
+                force_full_page_ocr=force_ocr,
+                iam_token=iam_token,
+                folder_id=folder_id,
+            )
         else:
             raise RuntimeError(f"Unexpected OCR engine type {ocr_engine}")
 
