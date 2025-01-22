@@ -3,6 +3,7 @@ import os
 import warnings
 from enum import Enum
 from pathlib import Path
+from pyrate_limiter import Duration, Limiter, RequestRate
 from typing import Annotated, Any, Dict, List, Literal, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -189,6 +190,20 @@ class OcrMacOptions(OcrOptions):
     )
 
 
+class VisionOcrOptions(OcrOptions):
+    """Options for the Yandex Visual OCR engine."""
+
+    kind: Literal["visionocr"] = "visionocr"
+    lang: List[str] = ["*"]  # automatically detect the languages with "*"
+    iam_token: str
+    folder_id: str
+    req_rate: Limiter = Limiter(RequestRate(1, Duration.SECOND * 2))
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+
+
 # Define an enum for the backend options
 class PdfBackend(str, Enum):
     """Enum of valid PDF backends."""
@@ -207,6 +222,7 @@ class OcrEngine(str, Enum):
     TESSERACT = "tesseract"
     OCRMAC = "ocrmac"
     RAPIDOCR = "rapidocr"
+    VISIONOCR = "visionocr"
 
 
 class PipelineOptions(BaseModel):
@@ -233,6 +249,7 @@ class PdfPipelineOptions(PipelineOptions):
         TesseractOcrOptions,
         OcrMacOptions,
         RapidOcrOptions,
+        VisionOcrOptions,
     ] = Field(EasyOcrOptions(), discriminator="kind")
 
     images_scale: float = 1.0
