@@ -197,10 +197,11 @@ class VisionOcrOptions(OcrOptions):
     lang: List[str] = ["*"]  # automatically detect the languages with "*"
     iam_token: str
     folder_id: str
-    req_rate: Limiter = Limiter(RequestRate(1, Duration.SECOND * 2))
+    limiter: Limiter = Limiter(RequestRate(1, Duration.SECOND * 2))
 
     model_config = ConfigDict(
         extra="forbid",
+        arbitrary_types_allowed=True,
     )
 
 
